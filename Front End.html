@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Web Dinamis - Aplikasi CRUD Produk & Kategori</title>
+<style>
+  :root {
+    --primary-color: #005f73;
+    --primary-dark: #0a3d62;
+    --accent-color: #ee6c4d;
+    --text-color: #222;
+    --bg-color: #f9f9f9;
+    --white: #fff;
+    --border-radius: 6px;
+    --transition: 0.3s ease;
+  }
+
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1, h2, h3, h4 {
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+
+  /* Header */
+  header {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  header h1 {
+    font-size: 1.5rem;
+  }
+  #btn-logout {
+    background: var(--accent-color);
+    border: none;
+    color: white;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color var(--transition);
+  }
+  #btn-logout:hover {
+    background: #d4553a;
+  }
+
+  /* Main content container */
+  main {
+    flex-grow: 1;
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 1rem 2rem;
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 0 15px rgb(0 0 0 / 0.1);
+    min-height: 500px;
+  }
+
+  /* LOGIN PAGE */
+  #loginPage {
+    max-width: 400px;
+    margin: 5rem auto;
+    background: var(--white);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: 0 0 15px rgb(0 0 0 / 0.1);
+  }
+  #loginPage h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+  }
+  #loginPage label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+  }
+  #loginPage input[type="text"],
+  #loginPage input[type="password"] {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border: 1px solid #bbb;
+    border-radius: var(--border-radius);
+    font-size: 1rem;
+    transition: border-color var(--transition);
+  }
+  #loginPage input[type="text"]:focus,
+  #loginPage input[type="password"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  #loginPage button {
+    width: 100%;
+    padding: 0.7rem;
+    background: var(--primary-color);
+    color: white;
+    font-weight: 700;
+    font-size: 1.1rem;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color var(--transition);
+  }
+  #loginPage button:hover {
+    background: var(--primary-dark);
+  }
+  #loginError {
+    color: #cc0000;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  /* DASHBOARD */
+  #dashboard {
+    display: none;
+    flex-direction: column;
+  }
+
+  /* Tab navigation */
+  .tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .tab {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    background: var(--bg-color);
+    border: 1px solid var(--primary-color);
+    border-radius: var(--border-radius);
+    color: var(--primary-color);
+    font-weight: 700;
+    user-select: none;
+    transition: background-color var(--transition), color var(--transition);
+  }
+  .tab.active {
+    background: var(--primary-color);
+    color: var(--white);
+  }
+  .tab:hover:not(.active) {
+    background: var(--primary-color);
+    color: var(--white);
+  }
+
+  /* Module container */
+  .module {
+    display: none;
+  }
+  .module.active {
+    display: block;
+  }
+
+  /* Table styling */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+  }
+  th, td {
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  th {
+    background: var(--primary-color);
+    color: white;
+  }
+  td.actions button {
+    margin-right: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.9rem;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--transition);
+  }
+  td.actions button.edit {
+    background: var(--accent-color);
+    color: white;
+  }
+  td.actions button.edit:hover {
+    background: #ce5740;
+  }
+  td.actions button.delete {
+    background: #cc0000;
+    color: white;
+  }
+  td.actions button.delete:hover {
+    background: #990000;
+  }
+
+  /* Form styling */
+  form label {
+    display: block;
+    margin: 0.5rem 0 0.2rem 0;
+    font-weight: 600;
+  }
+  form input[type="text"],
+  form input[type="number"] {
+    width: 100%;
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: border-color var(--transition);
+  }
+  form input[type="text"]:focus,
+  form input[type="number"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+  form .form-row {
+    margin-bottom: 1rem;
+  }
+  form button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.7rem 1.2rem;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: background-color var(--transition);
+  }
+  form button:hover {
+    background: var(--primary-dark);
+  }
+
+  /* Search input */
+  #searchInput {
+    width: 100%;
+    max-width: 300px;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: var(--border-radius);
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    main {
+      padding: 1rem;
+      margin: 1rem;
+    }
+    header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    #btn-logout {
+      width: 100%;
+    }
+    .tabs {
+      flex-wrap: wrap;
+    }
+    .tab {
+      flex: 1 1 45%;
+      text-align: center;
+    }
+    form .form-row {
+      margin-bottom: 0.8rem;
+    }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Web Dinamis - Aplikasi CRUD Produk & Kategori</h1>
+  <button id="btn-logout" style="display:none;">Logout</button>
+</header>
+
+<main>
+
+  <!-- LOGIN PAGE -->
+  <section id="loginPage">
+    <h2>Login Pengguna</h2>
+    <div id="loginError" class="hidden"></div>
+    <form id="loginForm" novalidate>
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required autocomplete="off" />
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required autocomplete="off" />
+      <button type="submit">Login</button>
+    </form>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="dashboard" class="hidden">
+    <nav class="tabs">
+      <div class="tab active" data-module="products">Produk</div>
+      <div class="tab" data-module="categories">Kategori</div>
+    </nav>
+
+    <!-- Produk Module -->
+    <section id="products" class="module active">
+      <h2>Manajemen Produk</h2>
+      <input type="text" id="searchInput" placeholder="Cari produk..." title="Cari produk berdasarkan nama" />
+
+      <form id="productForm" novalidate>
+        <input type="hidden" id="productId" />
+        <div class="form-row">
+          <label for="productName">Nama Produk:</label>
+          <input type="text" id="productName" name="productName" required maxlength="100" />
+        </div>
+        <div class="form-row">
+          <label for="productPrice">Harga Produk (Rp):</label>
+          <input type="number" id="productPrice" name="productPrice" min="0" required />
+        </div>
+        <button type="submit">Tambah / Update Produk</button>
+      </form>
+
+      <table id="productTable" aria-label="Daftar produk">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nama Produk</th>
+            <th>Harga (Rp)</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Produk akan tampil di sini -->
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Kategori Module -->
+    <section id="categories" class="module">
+      <h2>Manajemen Kategori</h2>
+
+      <form id="categoryForm" novalidate>
+        <input type="hidden" id="categoryId" />
+        <div class="form-row">
+          <label for="categoryName">Nama Kategori:</label>
+          <input type="text" id="categoryName" name="categoryName" required maxlength="50" />
+        </div>
+        <button type="submit">Tambah / Update Kategori</button>
+      </form>
+
+      <table id="categoryTable" aria-label="Daftar kategori">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nama Kategori</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Kategori akan tampil di sini -->
+        </tbody>
+      </table>
+    </section>
+  </section>
+
+</main>
+
+<script>
+  // Simulasi user database untuk login
+  const users = [
+    { username: "admin", password: "admin123", role: "admin" },
+    { username: "user", password: "user123", role: "user" }
+  ];
+
+  // In-memory storage for Produk & Kategori (replace with backend integration)
+  let products = [
+    { id: 1, name: "Produk A", price: 10000 },
+    { id: 2, name: "Produk B", price: 25000 }
+  ];
+  let categories = [
+    { id: 1, name: "Elektronik" },
+    { id: 2, name: "Pakaian" }
+  ];
+  let currentUser = null;
+
+  // DOM Elements
+  const loginPage = document.getElementById('loginPage');
+  const dashboard = document.getElementById('dashboard');
+  const btnLogout = document.getElementById('btn-logout');
+  const loginForm = document.getElementById('loginForm');
+  const loginError = document.getElementById('loginError');
+
+  // Tabs
+  const tabs = document.querySelectorAll('.tab');
+  const modules = document.querySelectorAll('.module');
+
+  // Produk
+  const productTableBody = document.querySelector('#productTable tbody');
+  const productForm = document.getElementById('productForm');
+  const productIdInput = document.getElementById('productId');
+  const productNameInput = document.getElementById('productName');
+  const productPriceInput = document.getElementById('productPrice');
+  const searchInput = document.getElementById('searchInput');
+
+  // Kategori
+  const categoryTableBody = document.querySelector('#categoryTable tbody');
+  const categoryForm = document.getElementById('categoryForm');
+  const categoryIdInput = document.getElementById('categoryId');
+  const categoryNameInput = document.getElementById('categoryName');
+
+  // ------------------- LOGIN FUNCTIONALITY -----------------
+
+  // Show error message in login form
+  function showLoginError(msg) {
+    loginError.textContent = msg;
+    loginError.classList.remove('hidden');
+  }
+  function clearLoginError() {
+    loginError.textContent = '';
+    loginError.classList.add('hidden');
+  }
+
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    clearLoginError();
+    const username = loginForm.username.value.trim();
+    const password = loginForm.password.value.trim();
+
+    if (!username || !password) {
+      showLoginError('Username dan password wajib diisi.');
+      return;
+    }
+
+    const user = users.find(u => u.username === username && u.password === password);
+
+    if (!user) {
+      showLoginError('Username atau password salah.');
+      return;
+    }
+
+    loginSuccess(user);
+  });
+
+  function loginSuccess(user) {
+    currentUser = user;
+    loginPage.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+    btnLogout.style.display = 'inline-block';
+    renderDashboardForRole(user.role);
+  }
+
+  btnLogout.addEventListener('click', () => {
+    // Reset state
+    currentUser = null;
+    loginForm.reset();
+    clearLoginError();
+    dashboard.classList.add('hidden');
+    btnLogout.style.display = 'none';
+    loginPage.classList.remove('hidden');
+  });
+
+  // ------------------- TAB NAVIGATION -----------------
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      modules.forEach(m => m.classList.remove('active'));
+      tab.classList.add('active');
+      const moduleId = tab.dataset.module;
+      document.getElementById(moduleId).classList.add('active');
+
+      // Reset any form on tab switch
+      if (moduleId === 'products') resetProductForm();
+      else if (moduleId === 'categories') resetCategoryForm();
+    });
+  });
+
+  // ------------------- RENDER FUNCTIONS -----------------
+
+  function renderDashboardForRole(role) {
+    // Here you can customize UI according to role (admin/user)
+    // For demo, we ignore role limits; both modules accessible.
+    renderProductTable();
+    renderCategoryTable();
+  }
+
+  // --- Produk ---
+  function renderProductTable(filter = '') {
+    productTableBody.innerHTML = '';
+    let filteredProducts = products;
+
+    if (filter) {
+      filteredProducts = products.filter(p => p.name.toLowerCase().includes(filter.toLowerCase()));
+    }
+
+    if(filteredProducts.length === 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="4" style="text-align:center;color:#666">Data produk tidak ditemukan</td>`;
+      productTableBody.appendChild(tr);
+      return;
+    }
+
+    filteredProducts.forEach(product => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${product.id}</td>
+        <td>${escapeHtml(product.name)}</td>
+        <td>${formatCurrency(product.price)}</td>
+        <td class="actions">
+          <button class="edit" data-id="${product.id}">Edit</button>
+          <button class="delete" data-id="${product.id}">Hapus</button>
+        </td>
+      `;
+      productTableBody.appendChild(tr);
+    });
+
+    // Add event listeners for edit and delete buttons
+    productTableBody.querySelectorAll('button.edit').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const id = parseInt(e.target.dataset.id);
+        startEditProduct(id);
+      });
+    });
+    productTableBody.querySelectorAll('button.delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const id = parseInt(e.target.dataset.id);
+        deleteProduct(id);
+      });
+    });
+  }
+
+  function startEditProduct(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+    productIdInput.value = product.id;
+    productNameInput.value = product.name;
+    productPriceInput.value = product.price;
+    productNameInput.focus();
+  }
+
+  function resetProductForm(){
+    productIdInput.value = '';
+    productNameInput.value = '';
+    productPriceInput.value = '';
+  }
+
+  function deleteProduct(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus produk ini?')) {
+      products = products.filter(p => p.id !== id);
+      renderProductTable(searchInput.value);
+      resetProductForm();
+    }
+  }
+
+  productForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const idVal = productIdInput.value.trim();
+    const nameVal = productNameInput.value.trim();
+    const priceVal = productPriceInput.value.trim();
+
+    // Validasi sederhana
+    if (!nameVal) {
+      alert('Nama produk wajib diisi');
+      productNameInput.focus();
+      return;
+    }
+    if (!priceVal || isNaN(priceVal) || Number(priceVal) < 0) {
+      alert('Harga produk harus berupa angka 0 atau lebih');
+      productPriceInput.focus();
+      return;
+    }
+
+    if (idVal) {
+      // Edit existing product
+      const idx = products.findIndex(p => p.id === Number(idVal));
+      if (idx !== -1){
+        products[idx].name = nameVal;
+        products[idx].price = Number(priceVal);
+        alert('Produk berhasil diperbarui');
+      }
+    } else {
+      // Add new product
+      const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+      products.push({ id: newId, name: nameVal, price: Number(priceVal) });
+      alert('Produk berhasil ditambahkan');
+    }
+    renderProductTable(searchInput.value);
+    resetProductForm();
+  });
+
+  searchInput.addEventListener('input', () => {
+    renderProductTable(searchInput.value);
+  });
+
+  // --- Kategori ---
+  function renderCategoryTable() {
+    categoryTableBody.innerHTML = '';
+    if(categories.length === 0){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td colspan="3" style="text-align:center;color:#666">Data kategori tidak ditemukan</td>`;
+      categoryTableBody.appendChild(tr);
+      return;
+    }
+
+    categories.forEach(category => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${category.id}</td>
+        <td>${escapeHtml(category.name)}</td>
+        <td class="actions">
+          <button class="edit" data-id="${category.id}">Edit</button>
+          <button class="delete" data-id="${category.id}">Hapus</button>
+        </td>
+      `;
+      categoryTableBody.appendChild(tr);
+    });
+
+    categoryTableBody.querySelectorAll('button.edit').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const id = parseInt(e.target.dataset.id);
+        startEditCategory(id);
+      });
+    });
+    categoryTableBody.querySelectorAll('button.delete').forEach(btn => {
+      btn.addEventListener('click', e => {
+        const id = parseInt(e.target.dataset.id);
+        deleteCategory(id);
+      });
+    });
+  }
+
+  function startEditCategory(id) {
+    const category = categories.find(c => c.id === id);
+    if (!category) return;
+    categoryIdInput.value = category.id;
+    categoryNameInput.value = category.name;
+    categoryNameInput.focus();
+  }
+
+  function resetCategoryForm() {
+    categoryIdInput.value = '';
+    categoryNameInput.value = '';
+  }
+
+  function deleteCategory(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+      categories = categories.filter(c => c.id !== id);
+      renderCategoryTable();
+      resetCategoryForm();
+    }
+  }
+
+  categoryForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const idVal = categoryIdInput.value.trim();
+    const nameVal = categoryNameInput.value.trim();
+
+    // Validasi
+    if (!nameVal) {
+      alert('Nama kategori wajib diisi');
+      categoryNameInput.focus();
+      return;
+    }
+
+    if (idVal) {
+      const idx = categories.findIndex(c => c.id === Number(idVal));
+      if (idx !== -1) {
+        categories[idx].name = nameVal;
+        alert('Kategori berhasil diperbarui');
+      }
+    } else {
+      const newId = categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+      categories.push({ id: newId, name: nameVal });
+      alert('Kategori berhasil ditambahkan');
+    }
+    renderCategoryTable();
+    resetCategoryForm();
+  });
+
+  // ------------------ HELPERS -------------------
+
+  // Format number as currency Rupiah
+  function formatCurrency(num) {
+    return num.toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+  }
+
+  // Escape HTML to prevent injection
+  function escapeHtml(text) {
+    var map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+  }
+
+</script>
+</body>
+</html>
